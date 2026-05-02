@@ -1,13 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
 
 export function PostCard({ post }) {
   const qc = useQueryClient();
+  const [reported, setReported] = useState(false);
+  const [reportMsg, setReportMsg] = useState("");
 
   const likePost = useMutation({
     mutationFn: async () => (await api.post(`/posts/${post._id}/like`)).data,
     onSuccess: async () => qc.invalidateQueries({ queryKey: ["posts"] }),
+  });
+
+  const reportPost = useMutation({
+    mutationFn: async () => (await api.post(`/posts/${post._id}/report`, { reason: "" })).data,
+    onSuccess: async () => {
+      setReported(true);
+      setReportMsg("Post reported");
+      await qc.invalidateQueries({ queryKey: ["posts"] });
+    },
+    onError: (err) => {
+      if (err?.response?.status === 409) {
+        setReported(true);
+        setReportMsg("Already reported");
+      } else {
+        setReportMsg(err?.response?.data?.error || "Could not report post");
+      }
+    },
   });
 
   return (
@@ -45,7 +64,20 @@ export function PostCard({ post }) {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
           <span className="text-xs font-medium">Share</span>
         </button>
+        {!reported ? (
+          <button
+            className="btn-ghost flex-1 justify-center gap-2 h-9 shadow-none text-slate-400 hover:text-white"
+            onClick={() => reportPost.mutate()}
+            disabled={reportPost.isPending}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4v16"></path><path d="M4 4h12l-2 4 2 4H4"></path></svg>
+            <span className="text-xs font-medium">{reportPost.isPending ? "Reporting..." : "Report"}</span>
+          </button>
+        ) : null}
       </div>
+      {reportMsg ? (
+        <div className="mt-2 ml-[3.5rem] text-xs text-[var(--text-secondary)]">{reportMsg}</div>
+      ) : null}
     </div>
   );
 }

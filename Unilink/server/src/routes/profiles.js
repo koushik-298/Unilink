@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const { verifyToken } = require("../middleware/auth");
 const { Profile } = require("../models/Profile");
 const { User } = require("../models/User");
+const { ConnectionRequest } = require("../models/ConnectionRequest");
 
 const profilesRouter = express.Router();
 
@@ -15,7 +16,22 @@ profilesRouter.get("/", verifyToken, async (req, res, next) => {
     const skill = String(req.query.skill || "").trim();
     const interest = String(req.query.interest || "").trim();
 
-    const userFilter = {};
+    const accepted = await ConnectionRequest.find({
+      status: "accepted",
+      $or: [{ fromUserId: req.user._id }, { toUserId: req.user._id }],
+    })
+      .select("fromUserId toUserId")
+      .lean();
+
+    const connectedIds = accepted.map((r) =>
+      String(r.fromUserId) === String(req.user._id) ? r.toUserId : r.fromUserId,
+    );
+
+    const userFilter = {
+      _id: {
+        $nin: [req.user._id, ...connectedIds],
+      },
+    };
     if (q) userFilter.name = { $regex: q, $options: "i" };
 
     const users = await User.find(userFilter)

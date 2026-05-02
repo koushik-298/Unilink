@@ -47,24 +47,22 @@ export function Home() {
     return <Navigate to="/login" replace />;
   }
 
-  // Data processing
   const totalConnections = connectionsQuery.data?.length || 0;
   const groupsJoined = groupsQuery.data?.filter(g => g.members?.includes(me.user.id)).length || 0;
-  // Let's assume upcoming events are just approved events since we don't have individual registration tracking mapped perfectly yet
   const upcomingEventsCount = eventsQuery.data?.filter(e => e.status === "approved").length || 0;
 
   const recentPosts = postsQuery.data?.slice(0, 3) || [];
-  const suggestedPeople = profilesQuery.data?.filter(p => p.userId !== me.user.id).slice(0, 3) || [];
+  const suggestedPeople = profilesQuery.data
+    ?.filter((p) => String(p?.user?.id) !== String(me.user.id))
+    .slice(0, 3) || [];
   const upcomingEvents = eventsQuery.data?.filter(e => e.status === "approved").slice(0, 3) || [];
   const suggestedGroups = groupsQuery.data?.filter(g => !g.members?.includes(me.user.id)).slice(0, 3) || [];
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr,340px] max-w-5xl mx-auto">
       
-      {/* LEFT COLUMN */}
       <div className="space-y-8">
         
-        {/* Welcome Section */}
         <section>
           <h1 className="text-2xl font-semibold text-white mb-4">Welcome back, {me.user.name}</h1>
           <div className="grid grid-cols-3 gap-4">
@@ -83,7 +81,6 @@ export function Home() {
           </div>
         </section>
 
-        {/* Recent Activity */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-medium text-white">Recent Activity</h2>
@@ -112,10 +109,8 @@ export function Home() {
         </section>
       </div>
 
-      {/* RIGHT COLUMN (SIDEBAR) */}
       <aside className="space-y-6">
         
-        {/* Suggested People */}
         <div className="card overflow-hidden">
           <div className="border-b border-[var(--border-color)] px-4 py-3 text-[11px] font-medium tracking-[0.07em] text-[var(--text-secondary)] uppercase">
             Suggested People
@@ -124,15 +119,17 @@ export function Home() {
             {profilesQuery.isLoading ? (
               <div className="p-4 text-xs text-[var(--text-hint)]">Loading...</div>
             ) : suggestedPeople.length > 0 ? (
-              suggestedPeople.map(person => (
-                <div key={person.userId} className="flex items-center justify-between p-4 gap-3">
+              suggestedPeople.map((person) => (
+                <div key={person.user._id} className="flex items-center justify-between p-4 gap-3">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-8 h-8 rounded-full bg-[var(--bg-input)] shrink-0 flex items-center justify-center text-xs font-medium text-[var(--text-primary)]">
-                       {person.name?.charAt(0)?.toUpperCase() || "?"}
+                       {person.user.name?.charAt(0)?.toUpperCase() || "?"}
                     </div>
                     <div className="truncate">
-                      <div className="text-sm font-medium text-[var(--text-primary)] truncate">{person.name}</div>
-                      <div className="text-xs text-[var(--text-secondary)] truncate">{person.department || "Student"}</div>
+                      <div className="text-sm font-medium text-[var(--text-primary)] truncate">{person.user.name}</div>
+                      <div className="text-xs text-[var(--text-secondary)] truncate">
+                        {person.profile?.department || "Student"}
+                      </div>
                     </div>
                   </div>
                   <Link
@@ -149,7 +146,6 @@ export function Home() {
           </div>
         </div>
 
-        {/* Upcoming Events */}
         <div className="card overflow-hidden">
           <div className="border-b border-[var(--border-color)] px-4 py-3 text-[11px] font-medium tracking-[0.07em] text-[var(--text-secondary)] uppercase">
             Upcoming Events
@@ -160,7 +156,7 @@ export function Home() {
             ) : upcomingEvents.length > 0 ? (
               upcomingEvents.map(event => (
                 <div key={event._id} className="p-4">
-                  <div className="text-sm font-medium text-[var(--text-primary)] line-clamp-1">{event.title}</div>
+                  <div className="text-sm font-medium text-[var(--text-primary)] line-clamp-1">{event.eventName}</div>
                   <div className="text-xs text-[var(--text-secondary)] mt-1 flex items-center gap-2">
                     <span>{new Date(event.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                     •
@@ -179,7 +175,6 @@ export function Home() {
           </div>
         </div>
 
-        {/* Suggested Groups */}
         <div className="card overflow-hidden">
           <div className="border-b border-[var(--border-color)] px-4 py-3 text-[11px] font-medium tracking-[0.07em] text-[var(--text-secondary)] uppercase">
             Suggested Groups
@@ -191,7 +186,7 @@ export function Home() {
               suggestedGroups.map(group => (
                 <div key={group._id} className="flex items-center justify-between p-4 gap-3">
                   <div className="truncate">
-                    <div className="text-sm font-medium text-[var(--text-primary)] truncate">{group.name}</div>
+                    <div className="text-sm font-medium text-[var(--text-primary)] truncate">{group.groupName}</div>
                     <div className="text-xs text-[var(--text-secondary)] truncate">{group.memberCount || group.members?.length || 0} members</div>
                   </div>
                   <Link

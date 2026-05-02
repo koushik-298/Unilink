@@ -6,6 +6,7 @@ const GroupSchema = new mongoose.Schema(
     description: { type: String, default: "" },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     members: { type: [mongoose.Schema.Types.ObjectId], ref: "User", default: [] },
+    maxMembers: { type: Number, default: 0 },
   },
   { timestamps: true },
 );

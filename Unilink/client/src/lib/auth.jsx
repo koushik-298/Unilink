@@ -30,7 +30,6 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     refreshMe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   async function login(email, password, remember = false) {

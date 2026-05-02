@@ -13,6 +13,7 @@ export function Groups() {
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Tech");
+  const [maxMembers, setMaxMembers] = useState(0);
 
   const groupsQuery = useQuery({
     queryKey: ["groups"],
@@ -20,11 +21,16 @@ export function Groups() {
   });
 
   const createGroup = useMutation({
-    mutationFn: async () => (await api.post("/groups", { groupName, description: `[${category}] ${description}` })).data,
+    mutationFn: async () => (await api.post("/groups", {
+      groupName,
+      description: `[${category}] ${description}`,
+      maxMembers: Number(maxMembers) || 0,
+    })).data,
     onSuccess: async () => {
       setGroupName("");
       setDescription("");
       setCategory("Tech");
+      setMaxMembers(0);
       await qc.invalidateQueries({ queryKey: ["groups"] });
     },
   });
@@ -59,7 +65,6 @@ export function Groups() {
       ) : (
         <div className="space-y-10">
           
-          {/* Suggested Groups Section */}
           <section>
             <h3 className="text-lg font-medium text-white mb-4">Suggested Groups</h3>
             {suggestedGroups.length > 0 ? (
@@ -86,7 +91,6 @@ export function Groups() {
             )}
           </section>
 
-          {/* Your Groups Section */}
           <section>
             <h3 className="text-lg font-medium text-white mb-4">Your Groups</h3>
             {yourGroups.length > 0 ? (
@@ -128,7 +132,6 @@ export function Groups() {
         </div>
       )}
 
-      {/* Create Group Form - Moved to bottom */}
       <div className="border-t border-white/10 pt-10">
         <div className="card p-6 md:p-8">
           <div className="text-lg font-medium text-[var(--text-primary)]">Create a Group</div>
@@ -150,6 +153,18 @@ export function Groups() {
               <select className="input mt-2 bg-black/20" value={category} onChange={(e) => setCategory(e.target.value)}>
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
+            </div>
+            <div>
+              <label className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                Max members (0 = unlimited)
+              </label>
+              <input
+                type="number"
+                min={0}
+                className="input mt-2"
+                value={maxMembers}
+                onChange={(e) => setMaxMembers(e.target.value === "" ? 0 : Number(e.target.value))}
+              />
             </div>
             <div className="md:col-span-2">
               <label className="text-xs font-semibold tracking-wider text-slate-500 uppercase">Description</label>

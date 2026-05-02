@@ -4,14 +4,14 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { z } = require("zod");
 
+const { jwtSecret } = require("../config");
 const { User } = require("../models/User");
 const { Profile } = require("../models/Profile");
 
 const authRouter = express.Router();
 
 function signToken(userId) {
-  const secret = process.env.JWT_SECRET || "dev_secret_change_me";
-  return jwt.sign({ sub: String(userId) }, secret, { expiresIn: "7d" });
+  return jwt.sign({ sub: String(userId) }, jwtSecret, { expiresIn: "7d" });
 }
 
 function newEmailVerificationCode() {
@@ -46,9 +46,12 @@ authRouter.post("/register", async (req, res, next) => {
 
     await Profile.create({ userId: user._id });
 
+    const token = signToken(user._id);
     res.status(201).json({
+      token,
       user: { id: user._id, name: user.name, email: user.email, role: user.role },
       needsEmailVerification: false,
+      isProfileIncomplete: true,
     });
   } catch (err) {
     next(err);

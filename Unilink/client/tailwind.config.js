@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
@@ -7,16 +6,11 @@ export default {
         white: "#FFFFFF",
         black: "#000000",
         ink: {
-          // Slate & Sage system
-          // - 950: app/page background
-          // - 900: card surfaces
-          // - 800: panel surfaces
           950: "#F0F2F5",
           900: "#FFFFFF",
           800: "#E8EDF4",
         },
         crimson: {
-          // Accent / interactive
           50: "#E8EDF4",
           100: "#DDE5F0",
           200: "#9AABB8",
@@ -29,7 +23,6 @@ export default {
           900: "#0F192D",
         },
         slate: {
-          // Text + borders
           50: "#F7F7F8",
           100: "#E8EDF4",
           200: "#D0D4DC",

@@ -15,6 +15,13 @@ const PostSchema = new mongoose.Schema(
     imageUrl: { type: String, default: "" },
     likes: { type: [mongoose.Schema.Types.ObjectId], ref: "User", default: [] },
     comments: { type: [CommentSchema], default: [] },
+    reports: {
+      type: [{
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        reason: { type: String, default: "" },
+      }],
+      default: [],
+    },
   },
   { timestamps: true },
 );

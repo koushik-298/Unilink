@@ -59,7 +59,6 @@ userRouter.put("/profile", verifyToken, async (req, res, next) => {
       );
     }
     
-    // Map incoming flat fields to the Profile model fields
     const profileData = {
       ...(input.age !== undefined && { age: String(input.age) }),
       ...(input.college !== undefined && { collegeName: input.college }),

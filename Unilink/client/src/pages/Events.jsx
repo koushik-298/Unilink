@@ -15,7 +15,6 @@ function getCreatorId(createdBy) {
 function CalendarView({ events, myId, toggleReminder, renderStatus }) {
   if (!events || events.length === 0) return null;
 
-  // Very simple calendar grouping for the demo: Group by Day of the Month
   const eventsByDate = {};
   events.forEach(e => {
     const d = new Date(e.date).toLocaleDateString();

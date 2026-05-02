@@ -72,6 +72,23 @@ postsRouter.post("/:postId/like", verifyToken, async (req, res, next) => {
   }
 });
 
+postsRouter.post("/:postId/report", verifyToken, async (req, res, next) => {
+  try {
+    const schema = z.object({ reason: z.string().max(300).optional() });
+    const input = schema.parse(req.body);
+    const post = await Post.findById(req.params.postId);
+    if (!post) return res.status(404).json({ error: "Not found" });
+    const me = String(req.user._id);
+    const alreadyReported = post.reports.some((r) => String(r.userId) === me);
+    if (alreadyReported) return res.status(409).json({ error: "Already reported" });
+    post.reports.push({ userId: req.user._id, reason: input.reason || "" });
+    await post.save();
+    res.json({ reported: true, reportCount: post.reports.length });
+  } catch (err) {
+    next(err);
+  }
+});
+
 postsRouter.post("/:postId/comments", verifyToken, async (req, res, next) => {
   try {
     const schema = z.object({ text: z.string().min(1).max(500) });

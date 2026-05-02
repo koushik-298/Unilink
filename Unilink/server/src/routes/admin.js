@@ -13,11 +13,8 @@ adminRouter.use(verifyToken, checkRole("admin"));
 
 adminRouter.get("/stats", async (_req, res, next) => {
   try {
-    const [totalUsers, studentUsers, adminUsers, totalPosts, totalEvents, pendingEvents, totalGroups] = await Promise.all([
+    const [totalUsers, totalEvents, pendingEvents, totalGroups] = await Promise.all([
       User.countDocuments(),
-      User.countDocuments({ role: "student" }),
-      User.countDocuments({ role: "admin" }),
-      Post.countDocuments(),
       Event.countDocuments(),
       Event.countDocuments({ status: "pending" }),
       Group.countDocuments()
@@ -27,7 +24,7 @@ adminRouter.get("/stats", async (_req, res, next) => {
       totalEvents,
       pendingEvents,
       totalGroups,
-      totalReports: 0, // Mocked until reporting module is completed
+      totalReports: 0,
     });
   } catch (err) {
     next(err);

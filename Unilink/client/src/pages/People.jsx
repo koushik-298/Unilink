@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
+import { useAuth } from "../lib/auth";
 
 export function People() {
+  const { me } = useAuth();
   const [q, setQ] = useState("");
   const [department, setDepartment] = useState("");
   const [skill, setSkill] = useState("");
@@ -19,6 +21,9 @@ export function People() {
   const sendRequest = useMutation({
     mutationFn: async (toUserId) => (await api.post("/connections/request", { toUserId })).data,
   });
+  const filteredPeople = (peopleQuery.data || []).filter(
+    (person) => String(person?.user?.id) !== String(me?.user?.id),
+  );
 
   return (
     <div className="space-y-6">
@@ -58,8 +63,8 @@ export function People() {
             {isSearching ? "Search Results" : "Suggested People"}
           </h3>
           <div className="grid gap-4 md:grid-cols-2">
-            {peopleQuery.data.length ? (
-              peopleQuery.data.map((r) => (
+            {filteredPeople.length ? (
+              filteredPeople.map((r) => (
                 <div key={r.user.id} className="card p-5 hover:border-[var(--border-color)] transition-colors">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-4 min-w-0">

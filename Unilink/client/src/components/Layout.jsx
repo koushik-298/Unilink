@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { Footer } from "./Footer";
@@ -55,37 +55,6 @@ function BrandMark({ variant = "dark" }) {
   );
 }
 
-export function Layout() {
-  const { me, logout } = useAuth();
-  const navigate = useNavigate();
-  const loggedIn = Boolean(me?.user);
-  const location = useLocation();
-
-  function handleLogout() {
-    logout();
-    navigate("/login", { replace: true, state: { loggedOut: true } });
-  }
-  const isPublic = PUBLIC_ROUTES.has(location.pathname);
-  const useSidebar = loggedIn && !isPublic;
-
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-
-  const profile = me?.profile;
-  const isProfileIncomplete = loggedIn && (!profile || (
-    !String(profile.department || "").trim() &&
-    !String(profile.bio || "").trim() &&
-    !(profile.skills && profile.skills.length)
-  ));
-
-  const homePath = loggedIn && me?.user?.role === "admin" ? "/admin" : "/home";
-
-  const headerBrand = (
-    <Link to={loggedIn ? homePath : "/login"} className="flex items-center gap-3">
-      <BrandMark variant={isPublic ? "light" : "dark"} />
-    </Link>
-  );
-
-/** When sidebar is collapsed (desktop), logo opens the sidebar instead of only navigating. */
 function SidebarBrand({ inSidebar, homePath, setSidebarOpen }) {
   if (inSidebar) {
     return (
@@ -125,6 +94,36 @@ function SidebarBrand({ inSidebar, homePath, setSidebarOpen }) {
     </button>
   );
 }
+
+export function Layout() {
+  const { me, logout } = useAuth();
+  const navigate = useNavigate();
+  const loggedIn = Boolean(me?.user);
+  const location = useLocation();
+
+  function handleLogout() {
+    logout();
+    navigate("/login", { replace: true, state: { loggedOut: true } });
+  }
+  const isPublic = PUBLIC_ROUTES.has(location.pathname);
+  const useSidebar = loggedIn && !isPublic;
+
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const profile = me?.profile;
+  const isProfileIncomplete = loggedIn && me?.user?.role !== "admin" && (!profile || (
+    !String(profile.department || "").trim() &&
+    !String(profile.bio || "").trim() &&
+    !(profile.skills && profile.skills.length)
+  ));
+
+  const homePath = loggedIn && me?.user?.role === "admin" ? "/admin" : "/home";
+
+  const headerBrand = (
+    <Link to={loggedIn ? homePath : "/login"} className="flex items-center gap-3">
+      <BrandMark variant={isPublic ? "light" : "dark"} />
+    </Link>
+  );
 
   if (useSidebar) {
     return (

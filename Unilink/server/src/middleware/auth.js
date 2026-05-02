@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const { jwtSecret } = require("../config");
 const { User } = require("../models/User");
 
 async function verifyToken(req, res, next) {
@@ -7,8 +8,7 @@ async function verifyToken(req, res, next) {
     const [, token] = header.split(" ");
     if (!token) return res.status(401).json({ error: "Unauthorized" });
 
-    const secret = process.env.JWT_SECRET || "dev_secret_change_me";
-    const payload = jwt.verify(token, secret);
+    const payload = jwt.verify(token, jwtSecret);
 
     const user = await User.findById(payload.sub).select("_id name email role");
     if (!user) return res.status(401).json({ error: "Unauthorized" });

@@ -4,9 +4,6 @@ import { useAuth } from "../lib/auth";
 
 export function Footer() {
   const year = new Date().getFullYear();
-  const navigate = useNavigate();
-  const { me } = useAuth();
-  const loggedIn = Boolean(me?.user);
 
 function AuthLink({ to, children, requireLogin = false }) {
   const { me } = useAuth();

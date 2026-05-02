@@ -20,6 +20,7 @@ groupsRouter.post("/", verifyToken, async (req, res, next) => {
     const schema = z.object({
       groupName: z.string().min(2).max(120),
       description: z.string().max(2000).optional(),
+      maxMembers: z.number().int().min(0).max(10000).optional(),
     });
     const input = schema.parse(req.body);
 
@@ -28,6 +29,7 @@ groupsRouter.post("/", verifyToken, async (req, res, next) => {
       description: input.description || "",
       createdBy: req.user._id,
       members: [req.user._id],
+      maxMembers: input.maxMembers ?? 0,
     });
 
     res.status(201).json({ group });
@@ -44,6 +46,9 @@ groupsRouter.post("/:groupId/join", verifyToken, async (req, res, next) => {
     const me = String(req.user._id);
     const isMember = group.members.some((id) => String(id) === me);
     if (!isMember) {
+      if (group.maxMembers > 0 && group.members.length >= group.maxMembers) {
+        return res.status(400).json({ error: "Group is full" });
+      }
       group.members.push(req.user._id);
       await group.save();
     }

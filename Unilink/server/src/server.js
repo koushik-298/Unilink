@@ -1,9 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-const mongoose = require("mongoose");
 const { z } = require("zod");
 
+const { connectDb } = require("./db");
+const { clientOrigin } = require("./config");
 const { authRouter } = require("./routes/auth");
 const { meRouter } = require("./routes/me");
 const { profilesRouter } = require("./routes/profiles");
@@ -17,13 +18,13 @@ const { userRouter } = require("./routes/user");
 function createServer() {
   const app = express();
 
+  // ── Body / logging middleware ────────────────────────────────────────────────
   app.use(
     cors({
       origin(origin, cb) {
-        // allow non-browser tools (Postman/curl) with no Origin
         if (!origin) return cb(null, true);
 
-        const allowedFromEnv = (process.env.CLIENT_ORIGIN || "")
+        const allowedFromEnv = clientOrigin
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean);
@@ -37,13 +38,15 @@ function createServer() {
       credentials: true,
     }),
   );
-  app.use(express.json({ limit: "1mb" }));
-  app.use(morgan("dev"));
+  app.use(express.json({ limit: "1mb" })); // parse JSON request bodies
+  app.use(morgan("dev")); // HTTP request logger
 
+  // ── Health check ─────────────────────────────────────────────────────────────
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, service: "unilink-api" });
   });
 
+  // ── API Routes ────────────────────────────────────────────────────────────────
   app.use("/api/auth", authRouter);
   app.use("/api/me", meRouter);
   app.use("/api/profiles", profilesRouter);
@@ -54,7 +57,7 @@ function createServer() {
   app.use("/api/admin", adminRouter);
   app.use("/api/user", userRouter);
 
-  // eslint-disable-next-line no-unused-vars
+  // ── Error handler ─────────────────────────────────────────────────────────────
   app.use((err, _req, res, _next) => {
     if (err instanceof z.ZodError) {
       return res.status(400).json({
@@ -70,13 +73,6 @@ function createServer() {
       status >= 500 ? "Internal server error" : err?.message || "Request error";
     res.status(status).json({ error: message });
   });
-
-  async function connectDb() {
-    const uri =
-      process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/unilink";
-    mongoose.set("strictQuery", true);
-    await mongoose.connect(uri);
-  }
 
   return { app, connectDb };
 }

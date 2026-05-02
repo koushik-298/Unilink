@@ -12,7 +12,6 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "concurrently": "^9.2.1",
     "nodemon": "^3.1.14"
   },
   "dependencies": {
